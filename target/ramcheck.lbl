@@ -1,0 +1,16 @@
+ramgood		= $0896
+cleanup		= $08ab
+dotest		= $0825
+end		= $0836
+loadram		= $0886
+print		= $0837
+nextch		= $0839
+storeram	= $0878
+loop		= $0818
+rambad		= $08a2
+prtbank		= $0828
+msg1		= $0848
+msg3		= $0863
+msg2		= $085d
+ramtest		= $086a
+start		= $080d

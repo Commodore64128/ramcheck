@@ -1,0 +1,103 @@
+
+; 64tass Turbo Assembler Macro V1.53.1515 listing file
+; 64tass -a -l target\ramcheck.lbl -L target\ramcheck.lst -o target\ramcheck src\ramcheck.asm
+; Wed Feb 02 08:25:53 2022
+
+;Offset	;Hex		;Monitor	;Source
+
+;******  Processing input file: src\ramcheck.asm
+
+
+;******  Processing file: src\macros.asm
+
+
+;******  Return to file: src\ramcheck.asm
+
+>0801	0b 08 d5 07			    .word (+), 2005
+>0805	9e 32 30 36 31 00		    .null $9e, format("%d",start)
+>080b	00 00				 +  .word 0
+.080d					start:
+.080d	a9 48		lda #$48	    lda #<msg1      ; print the welcome message
+.080f	85 fe		sta $fe		    sta $fe
+.0811	a9 08		lda #$08	    lda #>msg1
+.0813	85 ff		sta $ff		    sta $ff
+.0815	20 37 08	jsr $0837	    jsr print
+.0818					loop:
+.0818	ad 64 08	lda $0864	    lda msg3+1      ; get bank number
+.081b	c9 39		cmp #$39	    cmp #$39        ; = 9 ?
+.081d	f0 17		beq $0836	    beq end         ; if so, end
+.081f	18		clc		    clc             ; if not, add one
+.0820	69 01		adc #$01	    adc #$01
+.0822	8d 64 08	sta $0864	    sta msg3+1      ; store the new bank number
+.0825					dotest:
+.0825	20 6a 08	jsr $086a	    jsr ramtest     ; execute the test
+.0828					prtbank:
+.0828	a9 5d		lda #$5d	    lda #<msg2      ; print "Bank nn " (checkmark or X)
+.082a	85 fe		sta $fe		    sta $fe
+.082c	a9 08		lda #$08	    lda #>msg2
+.082e	85 ff		sta $ff		    sta $ff
+.0830	20 37 08	jsr $0837	    jsr print
+.0833	4c 18 08	jmp $0818	    jmp loop
+.0836					end:
+.0836	60		rts		    rts
+.0837					print:
+.0837	a0 00		ldy #$00	    ldy #$00
+.0839					nextch:
+.0839	b1 fe		lda ($fe),y	    lda ($fe),y
+.083b	f0 07		beq $0844	    beq +
+.083d	20 d2 ff	jsr $ffd2	    jsr $FFD2
+.0840	c8		iny		    iny
+.0841	4c 39 08	jmp $0839	    jmp nextch
+.0844	20 6a 08	jsr $086a	+   jsr ramtest
+.0847	60		rts		    rts
+.0848					msg1:
+>0848	93 0e d3 55 50 45 52 c3		    .text $93,$0e,"SuperCPU Ramcheck",$0d,$00
+>0850	d0 d5 20 d2 41 4d 43 48 45 43 4b 0d 00
+.085d					msg2:
+>085d	0d c2 41 4e 4b 20		    .text $0d,"Bank "
+.0863					msg3:
+>0863	30 32 20 00 00 00 00		    .byte $30, $32, $20, $00, $00, $00, $00
+.086a					ramtest:
+.086a	18		clc		                clc
+.086b	fb		xce		                xce
+.086c	e2 20		sep #$20	                SEP #$20
+.086e	ad 64 08	lda $0864	    lda msg3+1          ; switch to data bank #n
+.0871	38		sec		    sec
+.0872	e9 30		sbc #$30	    sbc #$30
+.0874	48		pha		                pha                     ; push the value to the stack
+.0875	ab		plb		                plb                     ; pull value from stack to data bank register
+.0876	c2 10		rep #$10	                REP #$10
+.0878					storeram:
+.0878	a0 00 00	ldy #$0000	    ldy #$0000          ; loop through entire bank memory
+.087b	a9 a0		lda #$a0	    lda #$a0
+.087d	99 00 00	sta $0000,y	-   sta $0000,y         ; populate entire bank with $a0
+.0880	c8		iny		    iny
+.0881	c0 00 00	cpy #$0000	    cpy #$0000
+.0884	d0 f7		bne $087d	    bne -
+.0886					loadram:
+.0886	a0 00 00	ldy #$0000	    ldy #$0000          ; loop through entire bank memory
+.0889	b9 00 00	lda $0000,y	-   lda $0000,y
+.088c	c9 a0		cmp #$a0	    cmp #$a0            ; check against $a0
+.088e	d0 12		bne $08a2	    bne rambad
+.0890	c8		iny		    iny
+.0891	c0 00 00	cpy #$0000	    cpy #$0000
+.0894	d0 f3		bne $0889	    bne -
+.0896					ramgood:
+.0896	a9 00		lda #$00	    lda #$00            ; set databank to 0
+.0898	48		pha		                pha                     ; push the value to the stack
+.0899	ab		plb		                plb                     ; pull value from stack to data bank register
+.089a	a9 fa		lda #$fa	    lda #$fa            ; print a checkmark
+.089c	8d 66 08	sta $0866	    sta msg3+3
+.089f	4c ab 08	jmp $08ab	    jmp cleanup
+.08a2					rambad:
+.08a2	a9 00		lda #$00	    lda #$00            ; set databank to 0
+.08a4	48		pha		                pha                     ; push the value to the stack
+.08a5	ab		plb		                plb                     ; pull value from stack to data bank register
+.08a6	a9 d8		lda #$d8	    lda #'X'            ; print an X
+.08a8	8d 66 08	sta $0866	    sta msg3+3
+.08ab					cleanup:
+.08ab	38		sec		                sec
+.08ac	fb		xce		                xce
+.08ad	60		rts		    rts
+
+;******  End of listing
