@@ -50,8 +50,7 @@ nextch:
     jsr $FFD2
     iny
     jmp nextch
-+   jsr ramtest
-    rts
++   rts
 
 msg1:
     .text $93,$0e,"SuperCPU Ramcheck",$0d,$00
